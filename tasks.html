@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Helper - Tasks</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">College Helper</h1>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="notes.html">Notes</a></li>
+                <li><a href="tasks.html" class="active">Tasks</a></li>
+                <li><a href="links.html">Links</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="page-header">
+            <h2>Tasks & Deadlines</h2>
+            <p>Track your assignments and important dates</p>
+        </section>
+
+        <section class="add-form">
+            <h3>Add New Task</h3>
+            <form id="taskForm">
+                <input type="text" id="taskTitle" placeholder="Task name (e.g., Submit Physics Assignment)" required>
+                <input type="text" id="taskSubject" placeholder="Subject (e.g., Physics)" required>
+                <input type="date" id="taskDeadline" required>
+                <select id="taskPriority" required>
+                    <option value="">Select priority</option>
+                    <option value="high">High Priority</option>
+                    <option value="medium">Medium Priority</option>
+                    <option value="low">Low Priority</option>
+                </select>
+                <button type="submit" class="btn">Add Task</button>
+            </form>
+        </section>
+
+        <section class="items-list">
+            <h3>Your Tasks</h3>
+            <div id="tasksList"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>College Helper © 2025</p>
+    </footer>
+
+    <script src="tasks.js"></script>
+</body>
+</html>

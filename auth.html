@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>College Helper - Auth</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <script>
+    // If already logged in, go straight to dashboard
+    if (localStorage.getItem('ch_currentUser')) {
+      location.href = 'dashboard.html';
+    }
+  </script>
+  <nav class="navbar">
+    <div class="nav-container">
+      <h1 class="logo">College Helper</h1>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container auth-container">
+    <section class="auth-box">
+      <h2>Login</h2>
+      <form id="loginForm">
+        <input id="loginUser" placeholder="Username" required />
+        <input id="loginPass" placeholder="Password" type="password" required />
+        <button type="submit" class="btn">Login</button>
+      </form>
+
+      <hr/>
+
+      <h2>Register</h2>
+      <form id="registerForm">
+        <input id="regUser" placeholder="Username" required />
+        <input id="regPass" placeholder="Password" type="password" required />
+        <button type="submit" class="btn">Register</button>
+      </form>
+
+      <p id="authMsg" class="muted"></p>
+    </section>
+  </main>
+
+  <script>
+    // Simple client-side auth (for demo only). Stores users in localStorage.
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('ch_users') || '[]');
+    }
+    function saveUsers(u){ localStorage.setItem('ch_users', JSON.stringify(u)); }
+
+    document.getElementById('registerForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const user = document.getElementById('regUser').value.trim();
+      const pass = document.getElementById('regPass').value;
+      const users = getUsers();
+      if(users.find(x=>x.user===user)){ showMsg('Username exists'); return; }
+      users.push({user, pass});
+      saveUsers(users);
+      showMsg('Registered. You can login now.');
+      e.target.reset();
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const user = document.getElementById('loginUser').value.trim();
+      const pass = document.getElementById('loginPass').value;
+      const users = getUsers();
+      const found = users.find(x=>x.user===user && x.pass===pass);
+      if(!found){ showMsg('Invalid credentials'); return; }
+      localStorage.setItem('ch_currentUser', user);
+      showMsg('Login successful. Redirecting to dashboard...');
+      setTimeout(()=> location.href = 'dashboard.html', 800);
+    });
+
+    function showMsg(m){ document.getElementById('authMsg').textContent = m; }
+  </script>
+</body>
+</html>

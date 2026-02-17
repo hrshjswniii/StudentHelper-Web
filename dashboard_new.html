@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>College Helper - Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js"></script>
+  <style>
+    /* Enhanced dashboard styles */
+    .welcome-banner {
+      background: linear-gradient(135deg, #2b6cb0, #4299e1);
+      color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+    }
+    .welcome-banner h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .stat-card h3 {
+      color: #4a5568;
+      margin-bottom: 1rem;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #2b6cb0;
+    }
+    .stat-label {
+      color: #718096;
+      font-size: 0.9rem;
+    }
+    .activity-feed {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .activity-item {
+      padding: 1rem;
+      border-left: 4px solid #e2e8f0;
+      margin-bottom: 1rem;
+      background: #f8fafc;
+      border-radius: 0 4px 4px 0;
+    }
+    .activity-item.note { border-left-color: #4299e1; }
+    .activity-item.task { border-left-color: #48bb78; }
+    .activity-item.link { border-left-color: #805ad5; }
+    .activity-time {
+      font-size: 0.9rem;
+      color: #718096;
+    }
+    .activity-content {
+      margin-top: 0.25rem;
+    }
+    .quick-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .quick-action-btn {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      cursor: pointer;
+      text-align: left;
+      transition: transform 0.2s ease;
+    }
+    .quick-action-btn:hover {
+      transform: translateY(-2px);
+    }
+    .quick-action-btn i {
+      display: block;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .quick-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <h1 class="logo">College Helper</h1>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="notes.html">Notes</a></li>
+        <li><a href="tasks.html">Tasks</a></li>
+        <li><a href="links.html">Links</a></li>
+        <li><a href="#" id="logoutBtn">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container dashboard">
+    <div class="welcome-banner">
+      <h2>Welcome back, <span id="userWelcome">...</span>!</h2>
+      <p>Last login: <span id="lastLoginTime">...</span></p>
+    </div>
+
+    <div class="quick-actions">
+      <a href="notes.html" class="quick-action-btn">
+        <i>📝</i>
+        <strong>Add Notes</strong>
+        <p>Upload study materials</p>
+      </a>
+      <a href="tasks.html" class="quick-action-btn">
+        <i>✅</i>
+        <strong>New Task</strong>
+        <p>Track assignments</p>
+      </a>
+      <a href="links.html" class="quick-action-btn">
+        <i>🔗</i>
+        <strong>Save Link</strong>
+        <p>Bookmark resources</p>
+      </a>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <h3>Notes</h3>
+        <div class="stat-value" id="notesCount">0</div>
+        <span class="stat-label">Total uploads</span>
+        <div class="stat-detail" id="notesSize">0 KB total size</div>
+      </div>
+      <div class="stat-card">
+        <h3>Tasks</h3>
+        <div class="stat-value" id="tasksCount">0</div>
+        <span class="stat-label">Active tasks</span>
+        <div class="stat-detail" id="completedTasks">0 completed</div>
+      </div>
+      <div class="stat-card">
+        <h3>Links</h3>
+        <div class="stat-value" id="linksCount">0</div>
+        <span class="stat-label">Saved links</span>
+      </div>
+    </div>
+
+    <div class="content-grid">
+      <section class="activity-feed">
+        <h3>Recent Activity</h3>
+        <div id="recentActivity">
+          <!-- Activity items will be populated here -->
+        </div>
+      </section>
+
+      <section class="upcoming-tasks">
+        <h3>Upcoming Deadlines</h3>
+        <div id="deadlines">
+          <!-- Deadlines will be populated here -->
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="dashboard-manager.js"></script>
+</body>
+</html>

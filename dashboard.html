@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>College Helper - Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Enhanced dashboard styles */
+    .welcome-header {
+      background: linear-gradient(135deg, #2b6cb0, #4299e1);
+      color: white;
+      padding: 2rem;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(43, 108, 176, 0.1);
+    }
+    .welcome-header h2 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    .last-login {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    .dashboard-section {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    .dashboard-section h3 {
+      color: #2d3748;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    .deadline-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      border-radius: 6px;
+      background: #f8fafc;
+      margin-bottom: 0.5rem;
+    }
+    .deadline-item.due-today {
+      background: #fff5f5;
+      border-left: 4px solid #f56565;
+    }
+    .deadline-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .deadline-date {
+      font-size: 0.9em;
+      color: #718096;
+    }
+    .deadline-time {
+      color: #4a5568;
+      font-weight: 500;
+    }
+    .activity-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: #f8fafc;
+      border-radius: 6px;
+      border-left: 3px solid #cbd5e0;
+    }
+    .activity-item.note { border-left-color: #4299e1; }
+    .activity-item.task { border-left-color: #48bb78; }
+    .activity-item.link { border-left-color: #805ad5; }
+    .activity-item.status-completed { background: #f0fff4; }
+    .activity-item.status-pending { background: #fffaf0; }
+    .activity-time {
+      color: #718096;
+      font-size: 0.9em;
+      white-space: nowrap;
+    }
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+    .stat-item {
+      background: #f8fafc;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-item span {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 0.25rem;
+    }
+    .stat-item small {
+      color: #718096;
+    }
+    @media (max-width: 768px) {
+      .quick-stats {
+        grid-template-columns: 1fr;
+      }
+      .welcome-header {
+        padding: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // Protect dashboard: redirect to auth if not logged in
+    const _ch_user = localStorage.getItem('ch_currentUser');
+    if (!_ch_user) location.href = 'auth.html';
+  </script>
+
+  <nav class="navbar">
+    <div class="nav-container">
+      <h1 class="logo">College Helper</h1>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="notes.html">Notes</a></li>
+        <li><a href="tasks.html">Tasks</a></li>
+        <li><a href="links.html">Links</a></li>
+        <li><a href="#" id="logoutBtn">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container dashboard">
+    <div class="welcome-header">
+      <h2>Welcome back, <span id="userWelcome">...</span>!</h2>
+      <p class="last-login">Last login: <span id="lastLoginTime">...</span></p>
+    </div>
+
+    <div class="summary-cards">
+      <div class="card">
+        <h3>Notes</h3>
+        <p id="notesCount">0</p>
+        <small class="card-subtitle">Total uploads</small>
+      </div>
+      <div class="card">
+        <h3>Tasks</h3>
+        <p id="tasksCount">0</p>
+        <small class="card-subtitle">Active tasks</small>
+      </div>
+      <div class="card">
+        <h3>Links</h3>
+        <p id="linksCount">0</p>
+        <small class="card-subtitle">Saved links</small>
+      </div>
+    </div>
+
+    <section class="dashboard-section">
+      <h3>Upcoming Deadlines</h3>
+      <div class="deadlines-list" id="deadlines">
+        <p class="muted">Loading deadlines...</p>
+      </div>
+    </section>
+
+    <section class="dashboard-section">
+      <h3>Recent Activity</h3>
+      <div class="activity-feed" id="recentActivity">
+        <p class="muted">Loading activity...</p>
+      </div>
+    </section>
+
+    <section class="dashboard-section">
+      <h3>Quick Stats</h3>
+      <div class="quick-stats">
+        <div class="stat-item">
+          <span id="notesSize">0 KB</span>
+          <small>Total notes size</small>
+        </div>
+        <div class="stat-item">
+          <span id="completedTasks">0</span>
+          <small>Completed tasks</small>
+        </div>
+        <div class="stat-item">
+          <span id="todayDeadlines">0</span>
+          <small>Due today</small>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const currentUser = localStorage.getItem('ch_currentUser');
+    const lastLogin = localStorage.getItem(`ch_lastLogin_${currentUser}`) || Date.now();
+    
+    function getNotes(){ return JSON.parse(localStorage.getItem('ch_notes') || '[]').filter(n=> n.user===currentUser); }
+    function getTasks(){ return JSON.parse(localStorage.getItem('ch_tasks') || '[]').filter(t=> t.user===currentUser); }
+    function getLinks(){ return JSON.parse(localStorage.getItem('ch_links') || '[]').filter(l=> l.user===currentUser); }
+
+    // Calculate total size of notes
+    function calculateNotesSize(notes) {
+      return notes.reduce((total, note) => {
+        // Rough estimate: base64 is ~4/3 original size, remove data:mime;base64, prefix
+        const base64 = note.dataUrl.split(',')[1] || '';
+        return total + (base64.length * 0.75);
+      }, 0);
+    }
+
+    // Format bytes to human readable
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 KB';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // Format relative time
+    function timeAgo(date) {
+      const seconds = Math.floor((Date.now() - date) / 1000);
+      const intervals = {
+        year: 31536000,
+        month: 2592000,
+        week: 604800,
+        day: 86400,
+        hour: 3600,
+        minute: 60
+      };
+      for (let [unit, secondsInUnit] of Object.entries(intervals)) {
+        const interval = Math.floor(seconds / secondsInUnit);
+        if (interval >= 1) {
+          return `${interval} ${unit}${interval === 1 ? '' : 's'} ago`;
+        }
+      }
+      return 'just now';
+    }
+
+    function render(){
+      const notes = getNotes();
+      const tasks = getTasks();
+      const links = getLinks();
+      
+      // Welcome and stats
+      document.getElementById('userWelcome').textContent = currentUser;
+      document.getElementById('lastLoginTime').textContent = timeAgo(parseInt(lastLogin));
+      document.getElementById('notesCount').textContent = notes.length;
+      document.getElementById('tasksCount').textContent = tasks.length;
+      document.getElementById('linksCount').textContent = links.length;
+      document.getElementById('notesSize').textContent = formatBytes(calculateNotesSize(notes));
+      document.getElementById('completedTasks').textContent = tasks.filter(t => t.completed).length;
+
+      // Deadlines: tasks with due date sorted soonest
+      const deadlinesEl = document.getElementById('deadlines');
+      const hasDue = tasks.filter(t=> t.due).sort((a,b)=> new Date(a.due)-new Date(b.due));
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      
+      const dueToday = hasDue.filter(t => {
+        const dueDate = new Date(t.due);
+        dueDate.setHours(0,0,0,0);
+        return dueDate.getTime() === today.getTime();
+      });
+      
+      document.getElementById('todayDeadlines').textContent = dueToday.length;
+      
+      deadlinesEl.innerHTML = hasDue.length ? hasDue.map(t => {
+        const dueDate = new Date(t.due);
+        const isToday = dueDate.toDateString() === today.toDateString();
+        return `
+          <div class="deadline-item ${isToday ? 'due-today' : ''}">
+            <div class="deadline-info">
+              <strong>${t.title}</strong>
+              <span class="deadline-date">${isToday ? 'Today' : dueDate.toLocaleDateString()}</span>
+            </div>
+            <span class="deadline-time">${dueDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+          </div>
+        `;
+      }).join('') : '<p class="muted">No upcoming deadlines</p>';
+
+      // Recent activity from notes and tasks
+      const recent = []
+        .concat(notes.map(n=>({
+          type:'note', 
+          when:n.uploadedAt, 
+          text:`Uploaded note: ${n.title||n.name}`,
+          detail: formatBytes(n.size || 0)
+        })))
+        .concat(tasks.map(t=>({
+          type:'task', 
+          when:t.createdAt||t.addedAt||0, 
+          text:`Task: ${t.title}`,
+          status: t.completed ? 'completed' : t.due ? 'pending' : 'no-due-date',
+          detail: t.due ? new Date(t.due).toLocaleDateString() : ''
+        })))
+        .concat(links.map(l=>({
+          type:'link',
+          when: l.addedAt || 0,
+          text: `Added link: ${l.title}`,
+          detail: l.category || 'Other'
+        })));
+
+      recent.sort((a,b)=> b.when - a.when);
+      const recentEl = document.getElementById('recentActivity');
+      recentEl.innerHTML = recent.length ? recent.slice(0,10).map(r => `
+        <div class="activity-item ${r.type}${r.status ? ' status-'+r.status : ''}">
+          <span class="activity-time">${timeAgo(r.when)}</span>
+          <span class="activity-text">${r.text}</span>
+          ${r.detail ? `<span class="activity-detail">${r.detail}</span>` : ''}
+        </div>
+      `).join('') : '<p class="muted">No recent activity</p>';
+    }
+
+    // Logout handler
+    document.getElementById('logoutBtn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      localStorage.removeItem('ch_currentUser');
+      location.href = 'auth.html';
+    });
+
+    // Update last login time
+    localStorage.setItem(`ch_lastLogin_${currentUser}`, Date.now());
+
+    // Initial render
+    render();
+    
+    // Refresh dashboard every minute to update relative times
+    setInterval(render, 60000);
+  </script>
+  <script src="app-bundle.js"></script>
+</body>
+</html>

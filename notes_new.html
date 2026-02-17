@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>College Helper - Notes</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js"></script>
+  <style>
+    /* Enhanced notes styles */
+    .notes-search {
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .notes-search input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #e1e1e1;
+      border-radius: 4px;
+    }
+    .notes-list {
+      display: grid;
+      gap: 1rem;
+    }
+    .note-item {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+    .note-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .note-info {
+      flex: 1;
+    }
+    .note-meta {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+      color: #666;
+      font-size: 0.9em;
+    }
+    .file-drop-zone {
+      border: 2px dashed #ccc;
+      padding: 2rem;
+      text-align: center;
+      border-radius: 8px;
+      margin: 1rem 0;
+      transition: all 0.3s ease;
+    }
+    .file-drop-zone.dragover {
+      border-color: #2b6cb0;
+      background: rgba(43, 108, 176, 0.05);
+    }
+    .confirm-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .confirm-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      max-width: 400px;
+      width: 90%;
+    }
+    .confirm-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      justify-content: flex-end;
+    }
+    .progress-bar {
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+    .progress-bar .progress {
+      height: 100%;
+      background: #2b6cb0;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading {
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      border: 2px solid #e2e8f0;
+      border-top-color: #2b6cb0;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <h1 class="logo">College Helper</h1>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="notes.html" class="active">Notes</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="#" id="logoutBtn">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="notes-panel">
+      <div class="notes-header">
+        <h2>My Notes</h2>
+        <div class="notes-stats">
+          <span id="notesCount" class="muted"></span>
+          <span id="totalSize" class="muted"></span>
+        </div>
+      </div>
+
+      <div class="notes-upload-panel">
+        <h3>Upload New Notes</h3>
+        <form id="uploadForm" class="notes-controls">
+          <input name="noteTitle" id="noteTitle" placeholder="Title (optional)" />
+          <input name="noteDesc" id="noteDesc" placeholder="Brief description" />
+          <div class="file-drop-zone" id="dropZone">
+            <div class="file-input-group">
+              <input name="noteFile" id="noteFile" type="file" multiple />
+              <small class="muted">Drop files here or click to select</small>
+            </div>
+            <div class="progress-bar" style="display: none;">
+              <div class="progress"></div>
+            </div>
+          </div>
+          <button type="submit" id="uploadBtn" class="btn">Upload Files</button>
+        </form>
+      </div>
+
+      <div class="notes-list-container">
+        <h3>My Notes</h3>
+        <div class="notes-search">
+          <input type="text" id="searchNotes" placeholder="Search notes..." />
+          <select id="sortNotes">
+            <option value="date-new">Newest First</option>
+            <option value="date-old">Oldest First</option>
+            <option value="name">Name (A-Z)</option>
+            <option value="size">Size</option>
+          </select>
+        </div>
+        <div id="notesList" class="notes-list">
+          <!-- Notes will be populated here -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Initialize drag and drop
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('noteFile');
+
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, preventDefaults, false);
+      document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+      dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+      dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
+    function highlight(e) {
+      dropZone.classList.add('dragover');
+    }
+
+    function unhighlight(e) {
+      dropZone.classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      fileInput.files = files;
+      handleFiles(files);
+    }
+
+    function handleFiles(files) {
+      if (files.length > 0) {
+        CollegeHelper.showToast(`${files.length} file(s) selected`, 'info');
+      }
+    }
+
+    // Track upload progress
+    let uploadProgress = 0;
+    let totalFiles = 0;
+    const progressBar = document.querySelector('.progress-bar');
+    const progress = progressBar.querySelector('.progress');
+
+    function updateProgress(increment) {
+      uploadProgress += increment;
+      const percentage = (uploadProgress / totalFiles) * 100;
+      progress.style.width = percentage + '%';
+      
+      if (uploadProgress >= totalFiles) {
+        setTimeout(() => {
+          progressBar.style.display = 'none';
+          uploadProgress = 0;
+          totalFiles = 0;
+        }, 1000);
+      }
+    }
+
+    // Handle form submission
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const files = fileInput.files;
+      if (!files.length) {
+        CollegeHelper.showToast('Please select at least one file', 'error');
+        return;
+      }
+
+      progressBar.style.display = 'block';
+      progress.style.width = '0%';
+      uploadProgress = 0;
+      totalFiles = files.length;
+
+      const title = document.getElementById('noteTitle').value.trim();
+      const description = document.getElementById('noteDesc').value.trim();
+
+      try {
+        await notesManager.handleUpload();
+        updateProgress(totalFiles); // Complete the progress bar
+      } catch (error) {
+        CollegeHelper.showToast('Upload failed: ' + error.message, 'error');
+        progressBar.style.display = 'none';
+      }
+    });
+  </script>
+  <script src="notes-manager.js"></script>
+</body>
+</html>

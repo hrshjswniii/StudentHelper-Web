@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Helper - Links</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">College Helper</h1>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="notes.html">Notes</a></li>
+                <li><a href="tasks.html">Tasks</a></li>
+                <li><a href="links.html" class="active">Links</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <script>
+        // Protect links page
+        const _ch_user_links = localStorage.getItem('ch_currentUser');
+        if (!_ch_user_links) location.href = 'auth.html';
+    </script>
+
+    <main class="container">
+        <section class="page-header">
+            <h2>Important Links</h2>
+            <p>Quick access to college portals and resources</p>
+        </section>
+
+        <section class="add-form">
+            <h3>Add New Link</h3>
+            <form id="linkForm">
+                <input type="text" id="linkTitle" placeholder="Link name (e.g., College Portal)" required>
+                <input type="url" id="linkUrl" placeholder="URL (e.g., https://portal.college.edu)" required>
+                <select id="linkCategory" required>
+                    <option value="">Select category</option>
+                    <option value="portal">College Portal</option>
+                    <option value="timetable">Time Table</option>
+                    <option value="library">Library</option>
+                    <option value="resource">Study Resource</option>
+                    <option value="other">Other</option>
+                </select>
+                <button type="submit" class="btn">Add Link</button>
+            </form>
+        </section>
+
+        <section class="items-list">
+            <h3>Your Links</h3>
+            <div id="linksList"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>College Helper © 2025</p>
+    </footer>
+
+    <script>
+        // Expose current user to links.js via a global
+        window.CH_CURRENT_USER = localStorage.getItem('ch_currentUser');
+    </script>
+    <script src="links.js"></script>
+</body>
+</html>

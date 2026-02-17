@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Helper - Home</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <script type="module">
+  // Import Firebase libraries from CDN
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { 
+    getFirestore, 
+    collection, 
+    addDoc, 
+    getDocs 
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  // Your Firebase config (REPLACE with your real keys)
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Example: Add user to Firestore
+  async function addUser() {
+    await addDoc(collection(db, "users"), {
+      name: "Harsh Jeswani",
+      createdAt: new Date()
+    });
+    alert("User added to Firestore!");
+  }
+
+  // Make functions available globally
+  window.addUser = addUser;
+</script>
+
+
+<script type="module">
+  // Import the Firebase modules from CDN
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    getDocs,
+  } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_DOMAIN",
+    projectId: "YOUR_PROJECT_ID",
+    storageBucket: "YOUR_BUCKET",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Example: add a document
+  async function addDemoUser() {
+    await addDoc(collection(db, "users"), {
+      name: "Harsh",
+      role: "student",
+    });
+    alert("User added!");
+  }
+
+  // Make function global so buttons can call it
+  window.addDemoUser = addDemoUser;
+</script>
+</head>
+<body>
+    <script>
+        // If user not logged in, show auth page first
+        if (!localStorage.getItem('ch_currentUser')) {
+            // Keep a small timeout so dev tools can load; immediate redirect is fine too
+            location.href = 'auth.html';
+        }
+    </script>
+    <nav class="navbar">
+        <div class="nav-container">
+            <h1 class="logo">College Helper</h1>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="notes.html">Notes</a></li>
+                <li><a href="tasks.html">Tasks</a></li>
+                <li><a href="links.html">Links</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="auth.html">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <h2>Welcome to College Helper</h2>
+            <p>Your one-stop solution for managing college life</p>
+        </section>
+
+        <section class="features">
+            <div class="feature-card">
+                <h3>📚 Notes</h3>
+                <p>Keep all your study materials organized in one place</p>
+                <a href="notes.html" class="btn">Manage Notes</a>
+            </div>
+
+            <div class="feature-card">
+                <h3>✅ Tasks</h3>
+                <p>Track assignments and deadlines efficiently</p>
+                <a href="tasks.html" class="btn">Manage Tasks</a>
+            </div>
+
+            <div class="feature-card">
+                <h3>🔗 Links</h3>
+                <p>Quick access to important college portals and resources</p>
+                <a href="links.html" class="btn">Manage Links</a>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>College Helper © 2025</p>
+    </footer>
+    <button onclick="addUser()">Add Test User</button>
+</body>
+</html>

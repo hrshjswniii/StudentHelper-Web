@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>College Helper - Notes</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Additional styles for enhanced notes page */
+    .notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .notes-stats {
+      display: flex;
+      gap: 1rem;
+    }
+    .notes-upload-panel {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 10px;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    .notes-filters {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .notes-filters input,
+    .notes-filters select {
+      padding: 0.5rem;
+      border: 1px solid #e1e1e1;
+      border-radius: 4px;
+    }
+    .notes-filters input {
+      flex: 1;
+    }
+    .note-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 0.75rem;
+      transition: transform 0.15s ease;
+    }
+    .note-item:hover {
+      transform: translateY(-1px);
+    }
+    .note-main {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex: 1;
+    }
+    .note-icon {
+      font-size: 1.5rem;
+    }
+    .note-info {
+      flex: 1;
+    }
+    .note-desc {
+      color: #666;
+      margin: 0.25rem 0;
+    }
+    .note-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.9em;
+      color: #666;
+    }
+    .note-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .btn.danger {
+      background: #dc3545;
+    }
+    .btn.danger:hover {
+      background: #c82333;
+    }
+    .empty-notes {
+      text-align: center;
+      padding: 2rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    .file-input-group {
+      margin: 0.5rem 0;
+    }
+    .file-input-group small {
+      display: block;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-container">
+      <h1 class="logo">College Helper</h1>
+      <ul class="nav-links">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="notes.html" class="active">Notes</a></li>
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="#" id="logoutBtn">Logout</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <script>
+    // Auth check
+    const _ch_user_notes = localStorage.getItem('ch_currentUser');
+    if (!_ch_user_notes) location.href = 'auth.html';
+  </script>
+
+  <main class="container">
+    <section class="notes-panel">
+      <div class="notes-header">
+        <h2>My Notes</h2>
+        <div class="notes-stats">
+          <span id="notesCount" class="muted"></span>
+          <span id="totalSize" class="muted"></span>
+        </div>
+      </div>
+
+      <div class="notes-upload-panel">
+        <h3>Upload New Notes</h3>
+        <div class="notes-controls">
+          <input id="noteTitle" placeholder="Title (optional)" />
+          <input id="noteDesc" placeholder="Brief description" />
+          <div class="file-input-group">
+            <input id="noteFile" type="file" multiple />
+            <small class="muted">Supported files: PDF, DOC, DOCX, TXT, etc.</small>
+          </div>
+          <button id="uploadBtn" class="btn">Upload Files</button>
+        </div>
+      </div>
+
+      <div class="notes-list-container">
+        <h3>Previously Uploaded Notes</h3>
+        <div class="notes-filters">
+          <input type="text" id="searchNotes" placeholder="Search notes..." />
+          <select id="sortNotes">
+            <option value="date-new">Newest First</option>
+            <option value="date-old">Oldest First</option>
+            <option value="name">Name (A-Z)</option>
+            <option value="size">Size</option>
+          </select>
+        </div>
+        <ul id="notesList" class="notes-list"></ul>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Notes stored in localStorage under 'ch_notes' as array of {id, title, name, dataUrl, uploadedAt, description, size, user}
+    const user = localStorage.getItem('ch_currentUser');
+    if(!user) location.href = 'auth.html'; // ensure authenticated
+
+    function getNotes(){ return JSON.parse(localStorage.getItem('ch_notes') || '[]'); }
+    function saveNotes(n){ localStorage.setItem('ch_notes', JSON.stringify(n)); }
+
+    const notesList = document.getElementById('notesList');
+    const countEl = document.getElementById('notesCount');
+    const sizeEl = document.getElementById('totalSize');
+    const searchInput = document.getElementById('searchNotes');
+    const sortSelect = document.getElementById('sortNotes');
+
+    // Format file size
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 KB';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    // Format relative time
+    function timeAgo(date) {
+      const seconds = Math.floor((Date.now() - date) / 1000);
+      const intervals = {
+        year: 31536000,
+        month: 2592000,
+        week: 604800,
+        day: 86400,
+        hour: 3600,
+        minute: 60
+      };
+      for (let [unit, secondsInUnit] of Object.entries(intervals)) {
+        const interval = Math.floor(seconds / secondsInUnit);
+        if (interval >= 1) {
+          return `${interval} ${unit}${interval === 1 ? '' : 's'} ago`;
+        }
+      }
+      return 'just now';
+    }
+
+    function escapeHtml(s){ 
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); 
+    }
+
+    function renderNotes(filter = '', sort = 'date-new'){
+      let notes = getNotes().filter(n => n.user === user);
+      
+      // Apply search filter
+      if(filter) {
+        const terms = filter.toLowerCase().split(' ');
+        notes = notes.filter(n => 
+          terms.every(term => 
+            (n.title || '').toLowerCase().includes(term) ||
+            (n.name || '').toLowerCase().includes(term) ||
+            (n.description || '').toLowerCase().includes(term)
+          )
+        );
+      }
+
+      // Apply sorting
+      notes.sort((a, b) => {
+        switch(sort) {
+          case 'date-new': return b.uploadedAt - a.uploadedAt;
+          case 'date-old': return a.uploadedAt - b.uploadedAt;
+          case 'name': return (a.title || a.name).localeCompare(b.title || b.name);
+          case 'size': return b.size - a.size;
+          default: return 0;
+        }
+      });
+
+      // Calculate total size
+      const totalBytes = notes.reduce((sum, n) => sum + (n.size || 0), 0);
+      
+      notesList.innerHTML = notes.map(n => `
+        <li class="note-item">
+          <div class="note-main">
+            <div class="note-icon">📄</div>
+            <div class="note-info">
+              <strong>${escapeHtml(n.title || n.name)}</strong>
+              ${n.description ? `<p class="note-desc">${escapeHtml(n.description)}</p>` : ''}
+              <div class="note-meta">
+                <span>Uploaded ${timeAgo(n.uploadedAt)}</span>
+                <span>Size: ${formatBytes(n.size || 0)}</span>
+                <span>Type: ${n.name.split('.').pop().toUpperCase()}</span>
+              </div>
+            </div>
+          </div>
+          <div class="note-actions">
+            <a href="${n.dataUrl}" download="${n.name}" class="btn small">Download</a>
+            <button onclick="deleteNote(${n.id})" class="btn small danger">Delete</button>
+          </div>
+        </li>
+      `).join('') || '<li class="muted empty-notes">No notes uploaded yet</li>';
+
+      countEl.textContent = `${notes.length} note${notes.length !== 1 ? 's' : ''}`;
+      sizeEl.textContent = `Total size: ${formatBytes(totalBytes)}`;
+    }
+
+    function deleteNote(id) {
+      if(!confirm('Are you sure you want to delete this note?')) return;
+      const notes = getNotes();
+      const index = notes.findIndex(n => n.id === id);
+      if(index === -1) return;
+      notes.splice(index, 1);
+      saveNotes(notes);
+      renderNotes(searchInput.value, sortSelect.value);
+    }
+
+    document.getElementById('uploadBtn').addEventListener('click', ()=>{
+      const files = document.getElementById('noteFile').files;
+      const title = document.getElementById('noteTitle').value.trim();
+      const description = document.getElementById('noteDesc').value.trim();
+      
+      if(!files.length){ alert('Choose at least one file'); return; }
+      
+      const notes = getNotes();
+      Array.from(files).forEach(file=>{
+        const reader = new FileReader();
+        reader.onload = (e)=>{
+          const dataUrl = e.target.result;
+          // Estimate file size from base64
+          const base64 = dataUrl.split(',')[1] || '';
+          const size = Math.floor(base64.length * 0.75); // rough estimate
+          
+          notes.push({
+            id: Date.now() + Math.random(),
+            title,
+            description,
+            name: file.name,
+            dataUrl,
+            size,
+            uploadedAt: Date.now(),
+            user
+          });
+          saveNotes(notes);
+          renderNotes(searchInput.value, sortSelect.value);
+        };
+        reader.readAsDataURL(file);
+      });
+      
+      document.getElementById('noteFile').value = '';
+      document.getElementById('noteTitle').value = '';
+      document.getElementById('noteDesc').value = '';
+    });
+
+    // Search and sort handlers
+    searchInput.addEventListener('input', e => renderNotes(e.target.value, sortSelect.value));
+    sortSelect.addEventListener('change', e => renderNotes(searchInput.value, e.target.value));
+
+    // Logout handler
+    document.getElementById('logoutBtn').addEventListener('click', (e)=>{
+      e.preventDefault();
+      localStorage.removeItem('ch_currentUser');
+      location.href = 'auth.html';
+    });
+
+    // Initial render
+    renderNotes();
+  </script>
+</body>
+</html>
