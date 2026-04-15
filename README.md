@@ -124,11 +124,10 @@ college-helper/
 
 ## 📄 License
 
-This project is open source. You can add a license such as MIT:
+This project is open source. 
 
 ```
 MIT License
 ```
 
 
-Just say 👍
